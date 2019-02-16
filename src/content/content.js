@@ -9,6 +9,44 @@
   const FONT_SIZE = 9;
   const STYLE = STYLE_ROUND_BG_TEXT;
 
+  const createLinkElem = () => {
+    const linkElem = document.createElement('link');
+    linkElem.rel = 'icon';
+    linkElem.type = 'image/png';
+
+    document.head.appendChild(linkElem);
+
+    return linkElem;
+  };
+
+  const getLinkElem = () => {
+    const linkElems = Array.from(
+      document.head.querySelectorAll('link[rel*="icon"]'),
+    ).filter(linkElem => Array.from(linkElem.relList).includes('icon'));
+
+    if (!linkElems.length) return createLinkElem();
+    if (linkElems.length === 1) return linkElems[0];
+
+    const linkElemsBySize = linkElems.reduce((lEBS, linkElem) => {
+      if (!linkElem.sizes.length) return lEBS.concat([[16, linkElem]]);
+
+      const linkElemBySizes = Array.from(linkElem.sizes).map(size => [
+        parseInt(size, 10),
+        linkElem,
+      ]);
+      return lEBS.concat(linkElemBySizes);
+    }, []);
+
+    const [, linkElemSize16] =
+      linkElemsBySize.find(([size]) => size === 16) || [];
+    if (linkElemSize16) return linkElemSize16;
+
+    const [[, linkElem]] = linkElemsBySize.sort(
+      ([aSize], [bSize]) => aSize - bSize,
+    );
+    return linkElem;
+  };
+
   const getFaviconImg = url =>
     new Promise(resolve => {
       if (!url) {
@@ -177,7 +215,7 @@
 
   // init
 
-  const linkElem = document.head.querySelector('link[rel*="icon"]');
+  const linkElem = getLinkElem();
   const titleElem = document.head.querySelector('title');
   const canvas = document.createElement('canvas');
   canvas.width = CANVAS_SIZE;
