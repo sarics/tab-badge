@@ -5,14 +5,26 @@
   const STYLE_BORDERED_TEXT = Symbol('BorderedText');
 
   // TODO make these configurable
+  const MAX_CHARS = 2;
   const FONT_SIZE = 9;
   const STYLE = STYLE_ROUND_BG_TEXT;
 
   const linkElem = document.head.querySelector('link[rel*="icon"]');
   if (!linkElem) return;
 
-  const [, badgeNum] = document.title.match(/\(([1-9]\d*\+?)\)/) || [];
-  if (!badgeNum) return;
+  const [, titleNum] = document.title.match(/\((\d+\+?)\)/) || [];
+  if (!titleNum) return;
+
+  const getBadgeNum = numStr => {
+    const num = parseInt(numStr, 10);
+    const maxNum = numStr.endsWith('+')
+      ? 10 ** (MAX_CHARS - 1) - 1
+      : 10 ** MAX_CHARS - 1;
+
+    if (num > maxNum) return `${maxNum}+`;
+    return num.toString();
+  };
+  const badgeNum = getBadgeNum(titleNum);
 
   const drawRoundBgText = ctx => {
     const BADGE_RADIUS = (FONT_SIZE + 1) / 2;
