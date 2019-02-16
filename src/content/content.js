@@ -6,7 +6,7 @@
 
   // TODO make these configurable
   const FONT_SIZE = 9;
-  const STYLE = STYLE_RECT_BG_TEXT;
+  const STYLE = STYLE_ROUND_BG_TEXT;
 
   const linkElem = document.head.querySelector('link[rel*="icon"]');
   if (!linkElem) return;
@@ -15,7 +15,7 @@
   if (!badgeNum) return;
 
   const drawRoundBgText = ctx => {
-    const BADGE_RADIUS = 5;
+    const BADGE_RADIUS = (FONT_SIZE + 1) / 2;
     const BADGE_PADDING_X = 2;
 
     ctx.font = `bold ${FONT_SIZE}px sans-serif`;
