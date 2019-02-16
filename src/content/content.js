@@ -1,7 +1,6 @@
 (function TabBadge() {
-  const CANVAS_SIZE = 32;
-  const BADGE_RADIUS = 10;
-  const BADGE_PADDING_X = 4;
+  const CANVAS_SIZE = 16;
+  const FONT_SIZE = 9;
 
   const linkElem = document.head.querySelector('link[rel*="icon"]');
   if (!linkElem) return;
@@ -9,18 +8,12 @@
   const [, badgeNum] = document.title.match(/\(([1-9]\d*\+?)\)/) || [];
   if (!badgeNum) return;
 
-  const drawBadge = e => {
-    const canvas = document.createElement('canvas');
-    canvas.width = CANVAS_SIZE;
-    canvas.height = CANVAS_SIZE;
+  const drawRoundBgText = ctx => {
+    const BADGE_RADIUS = 5;
+    const BADGE_PADDING_X = 2;
 
-    document.body.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d');
-
-    ctx.font = 'bold 18px sans-serif';
+    ctx.font = `bold ${FONT_SIZE}px sans-serif`;
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
 
     const text = ctx.measureText(badgeNum);
     const textWidth = Math.round(text.width);
@@ -38,9 +31,7 @@
     const rectHeight = BADGE_RADIUS * 2;
 
     const textX = leftArcX + rectWidth / 2;
-    const textY = CANVAS_SIZE - 9;
-
-    ctx.drawImage(e.target, 0, 0, 32, 32);
+    const textY = CANVAS_SIZE - 2;
 
     ctx.fillStyle = 'red';
 
@@ -61,6 +52,20 @@
 
     // text
     ctx.fillText(badgeNum, textX, textY);
+  };
+
+  const drawBadge = e => {
+    const canvas = document.createElement('canvas');
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
+
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+
+    ctx.drawImage(e.target, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+    drawRoundBgText(ctx);
 
     try {
       const url = canvas.toDataURL();
