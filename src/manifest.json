@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "Tab Badge",
+  "description": "",
+  "version": "1.0.0",
+
+  "applications": {
+    "gecko": {
+      "id": "tabbadge@sarics"
+    }
+  },
+
+  "permissions": ["*://*/*"],
+
+  "background": {
+    "scripts": ["background/background.js"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"]
+    }
+  ]
+}
