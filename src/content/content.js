@@ -30,11 +30,12 @@
     const num = parseInt(numStr, 10);
     if (Number.isNaN(num) || num === 0) return undefined;
 
-    const maxNum = numStr.endsWith('+')
-      ? 10 ** (MAX_CHARS - 1) - 1
-      : 10 ** MAX_CHARS - 1;
+    const hasPlus = numStr.endsWith('+');
+    const maxPlusNum = 10 ** (MAX_CHARS - 1) - 1;
+    const maxNum = hasPlus ? maxPlusNum : 10 ** MAX_CHARS - 1;
 
-    if (num > maxNum) return `${maxNum}+`;
+    if (num > maxNum) return `${maxPlusNum}+`;
+    if (hasPlus) return `${num}+`;
     return num.toString();
   };
 
