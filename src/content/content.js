@@ -170,16 +170,21 @@
     const textY = CANVAS_SIZE - TEXT_BORDER;
 
     ctx.fillStyle = 'white';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-    ctx.shadowBlur = 1;
     ctx.font = `${FONT_SIZE}px sans-serif`;
     ctx.textAlign = 'right';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+    ctx.shadowBlur = 1;
 
     [[1, 0], [0, -1], [-1, 0], [0, 1]].forEach(([x, y]) => {
       ctx.shadowOffsetX = x * TEXT_BORDER;
       ctx.shadowOffsetY = y * TEXT_BORDER;
       ctx.fillText(badgeNum, textX, textY);
     });
+
+    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
   };
 
   const drawBadge = (ctx, badgeNum) => {
