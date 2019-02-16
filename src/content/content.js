@@ -10,20 +10,26 @@
   const STYLE = STYLE_ROUND_BG_TEXT;
 
   const getFaviconImg = url =>
-    new Promise((resolve, reject) => {
+    new Promise(resolve => {
+      if (!url) {
+        resolve();
+        return;
+      }
+
+      const handleError = () => resolve();
       const handleImgLoad = e => resolve(e.target);
 
       const createImg = dataUrl => {
         const img = new Image();
         img.addEventListener('load', handleImgLoad);
-        img.addEventListener('error', reject);
+        img.addEventListener('error', handleError);
         img.src = dataUrl;
       };
 
       browser.runtime
         .sendMessage({ url })
         .then(createImg)
-        .catch(reject);
+        .catch(handleError);
     });
 
   const parseTitleNum = numStr => {
