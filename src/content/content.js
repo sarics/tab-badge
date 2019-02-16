@@ -1,4 +1,4 @@
-(function TabBadge() {
+(function TabBadge(document, browser) {
   const CANVAS_SIZE = 16;
   const STYLE_ROUND_BG_TEXT = Symbol('RoundBgText');
   const STYLE_RECT_BG_TEXT = Symbol('RectBgText');
@@ -9,14 +9,27 @@
   const FONT_SIZE = 9;
   const STYLE = STYLE_ROUND_BG_TEXT;
 
-  const linkElem = document.head.querySelector('link[rel*="icon"]');
-  if (!linkElem) return;
+  const getFaviconImg = url =>
+    new Promise((resolve, reject) => {
+      const handleImgLoad = e => resolve(e.target);
 
-  const [, titleNum] = document.title.match(/\((\d+\+?)\)/) || [];
-  if (!titleNum) return;
+      const createImg = dataUrl => {
+        const img = new Image();
+        img.addEventListener('load', handleImgLoad);
+        img.addEventListener('error', reject);
+        img.src = dataUrl;
+      };
 
-  const getBadgeNum = numStr => {
+      browser.runtime
+        .sendMessage({ url })
+        .then(createImg)
+        .catch(reject);
+    });
+
+  const parseTitleNum = numStr => {
     const num = parseInt(numStr, 10);
+    if (Number.isNaN(num) || num === 0) return undefined;
+
     const maxNum = numStr.endsWith('+')
       ? 10 ** (MAX_CHARS - 1) - 1
       : 10 ** MAX_CHARS - 1;
@@ -24,9 +37,13 @@
     if (num > maxNum) return `${maxNum}+`;
     return num.toString();
   };
-  const badgeNum = getBadgeNum(titleNum);
 
-  const drawRoundBgText = ctx => {
+  const getBadgeNum = titleElem => {
+    const [, titleNum] = titleElem.innerText.match(/\((\d+\+?)\)/) || [];
+    return titleNum && parseTitleNum(titleNum);
+  };
+
+  const drawRoundBgText = (ctx, badgeNum) => {
     const BADGE_RADIUS = (FONT_SIZE + 1) / 2;
     const BADGE_PADDING_X = 2;
 
@@ -72,7 +89,7 @@
     ctx.fillText(badgeNum, textX, textY);
   };
 
-  const drawRectBgText = ctx => {
+  const drawRectBgText = (ctx, badgeNum) => {
     const BADGE_HEIGHT = FONT_SIZE + 1;
     const BADGE_PADDING_X = 1;
 
@@ -101,7 +118,7 @@
     ctx.fillText(badgeNum, textX, textY);
   };
 
-  const drawBorderedText = ctx => {
+  const drawBorderedText = (ctx, badgeNum) => {
     const TEXT_BORDER = 1;
 
     const textX = CANVAS_SIZE - TEXT_BORDER;
@@ -120,50 +137,58 @@
     });
   };
 
-  const drawBadge = ctx => {
+  const drawBadge = (ctx, badgeNum) => {
     switch (STYLE) {
       case STYLE_ROUND_BG_TEXT:
-        return drawRoundBgText(ctx);
+        return drawRoundBgText(ctx, badgeNum);
       case STYLE_RECT_BG_TEXT:
-        return drawRectBgText(ctx);
+        return drawRectBgText(ctx, badgeNum);
       case STYLE_BORDERED_TEXT:
-        return drawBorderedText(ctx);
+        return drawBorderedText(ctx, badgeNum);
       default:
         return undefined;
     }
   };
 
-  const drawFavicon = e => {
-    const canvas = document.createElement('canvas');
-    canvas.width = CANVAS_SIZE;
-    canvas.height = CANVAS_SIZE;
-
-    document.body.appendChild(canvas);
-
+  const setFaviconBadge = (linkElem, titleElem, canvas, img) => {
     const ctx = canvas.getContext('2d');
+    const badgeNum = getBadgeNum(titleElem);
 
-    ctx.drawImage(e.target, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    ctx.beginPath();
 
-    drawBadge(ctx);
+    if (img) ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    if (badgeNum) drawBadge(ctx, badgeNum);
 
     try {
       const url = canvas.toDataURL();
-      linkElem.href = url;
+      linkElem.href = url; // eslint-disable-line no-param-reassign
     } catch (err) {
       console.error(err);
     }
   };
 
-  browser.runtime
-    .sendMessage({ url: linkElem.href })
-    .then(dataUrl => {
-      const img = new Image();
+  // init
 
-      img.addEventListener('load', drawFavicon);
+  const linkElem = document.head.querySelector('link[rel*="icon"]');
+  const titleElem = document.head.querySelector('title');
+  const canvas = document.createElement('canvas');
+  canvas.width = CANVAS_SIZE;
+  canvas.height = CANVAS_SIZE;
 
-      img.src = dataUrl;
-    })
-    .catch(err => {
-      console.error(err);
+  document.body.appendChild(canvas);
+
+  const start = img => {
+    setFaviconBadge(linkElem, titleElem, canvas, img);
+
+    const titleObserver = new MutationObserver(() => {
+      setFaviconBadge(linkElem, titleElem, canvas, img);
     });
-})();
+
+    titleObserver.observe(titleElem, {
+      childList: true,
+    });
+  };
+
+  getFaviconImg(linkElem.href).then(start);
+})(document, browser);
