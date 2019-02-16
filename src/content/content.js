@@ -1,11 +1,12 @@
 (function TabBadge() {
   const CANVAS_SIZE = 16;
   const STYLE_ROUND_BG_TEXT = Symbol('RoundBgText');
+  const STYLE_RECT_BG_TEXT = Symbol('RectBgText');
   const STYLE_BORDERED_TEXT = Symbol('BorderedText');
 
   // TODO make these configurable
   const FONT_SIZE = 9;
-  const STYLE = STYLE_BORDERED_TEXT;
+  const STYLE = STYLE_RECT_BG_TEXT;
 
   const linkElem = document.head.querySelector('link[rel*="icon"]');
   if (!linkElem) return;
@@ -59,6 +60,35 @@
     ctx.fillText(badgeNum, textX, textY);
   };
 
+  const drawRectBgText = ctx => {
+    const BADGE_HEIGHT = FONT_SIZE + 1;
+    const BADGE_PADDING_X = 1;
+
+    ctx.font = `bold ${FONT_SIZE}px sans-serif`;
+    ctx.textAlign = 'right';
+
+    const text = ctx.measureText(badgeNum);
+    const textWidth = Math.round(text.width);
+
+    const rectX = CANVAS_SIZE - BADGE_PADDING_X * 2 - textWidth;
+    const rectY = CANVAS_SIZE - BADGE_HEIGHT;
+    const rectWidth = BADGE_PADDING_X * 2 + textWidth;
+    const rectHeight = BADGE_HEIGHT;
+
+    const textX = CANVAS_SIZE - BADGE_PADDING_X;
+    const textY = CANVAS_SIZE - 2;
+
+    ctx.fillStyle = 'red';
+
+    // rect
+    ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+    ctx.fillStyle = 'white';
+
+    // text
+    ctx.fillText(badgeNum, textX, textY);
+  };
+
   const drawBorderedText = ctx => {
     const TEXT_BORDER = 1;
 
@@ -82,6 +112,8 @@
     switch (STYLE) {
       case STYLE_ROUND_BG_TEXT:
         return drawRoundBgText(ctx);
+      case STYLE_RECT_BG_TEXT:
+        return drawRectBgText(ctx);
       case STYLE_BORDERED_TEXT:
         return drawBorderedText(ctx);
       default:
