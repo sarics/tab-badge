@@ -1,6 +1,11 @@
 (function TabBadge() {
   const CANVAS_SIZE = 16;
+  const STYLE_ROUND_BG_TEXT = Symbol('RoundBgText');
+  const STYLE_BORDERED_TEXT = Symbol('BorderedText');
+
+  // TODO make these configurable
   const FONT_SIZE = 9;
+  const STYLE = STYLE_BORDERED_TEXT;
 
   const linkElem = document.head.querySelector('link[rel*="icon"]');
   if (!linkElem) return;
@@ -54,7 +59,37 @@
     ctx.fillText(badgeNum, textX, textY);
   };
 
-  const drawBadge = e => {
+  const drawBorderedText = ctx => {
+    const TEXT_BORDER = 1;
+
+    const textX = CANVAS_SIZE - TEXT_BORDER;
+    const textY = CANVAS_SIZE - TEXT_BORDER;
+
+    ctx.fillStyle = 'white';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+    ctx.shadowBlur = 1;
+    ctx.font = `${FONT_SIZE}px sans-serif`;
+    ctx.textAlign = 'right';
+
+    [[1, 0], [0, -1], [-1, 0], [0, 1]].forEach(([x, y]) => {
+      ctx.shadowOffsetX = x * TEXT_BORDER;
+      ctx.shadowOffsetY = y * TEXT_BORDER;
+      ctx.fillText(badgeNum, textX, textY);
+    });
+  };
+
+  const drawBadge = ctx => {
+    switch (STYLE) {
+      case STYLE_ROUND_BG_TEXT:
+        return drawRoundBgText(ctx);
+      case STYLE_BORDERED_TEXT:
+        return drawBorderedText(ctx);
+      default:
+        return undefined;
+    }
+  };
+
+  const drawFavicon = e => {
     const canvas = document.createElement('canvas');
     canvas.width = CANVAS_SIZE;
     canvas.height = CANVAS_SIZE;
@@ -65,7 +100,7 @@
 
     ctx.drawImage(e.target, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-    drawRoundBgText(ctx);
+    drawBadge(ctx);
 
     try {
       const url = canvas.toDataURL();
@@ -80,7 +115,7 @@
     .then(dataUrl => {
       const img = new Image();
 
-      img.addEventListener('load', drawBadge);
+      img.addEventListener('load', drawFavicon);
 
       img.src = dataUrl;
     })
