@@ -10,7 +10,7 @@
     }
   },
 
-  "permissions": ["http://*/*", "https://*/*", "tabs"],
+  "permissions": ["http://*/*", "https://*/*", "storage", "tabs"],
 
   "background": {
     "scripts": ["background/background.js"]

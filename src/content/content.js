@@ -8,7 +8,6 @@
 
   // TODO make these configurable
   const FONT_SIZE = 9;
-  const style = STYLE_BORDERED_TEXT;
 
   const getLinkElem = () => {
     const selfLinkElem = document.getElementById(LINK_ELEM_ID);
@@ -173,8 +172,8 @@
     ctx.shadowOffsetY = 0;
   };
 
-  const drawBadge = (ctx, badgeNum) => {
-    switch (style) {
+  const drawBadge = (ctx, badgeNum, options) => {
+    switch (options.style) {
       case STYLE_ROUND_BG_TEXT:
         return drawRoundBgText(ctx, badgeNum);
       case STYLE_RECT_BG_TEXT:
@@ -186,7 +185,7 @@
     }
   };
 
-  const getFaviconUrl = (img, badgeNum) => {
+  const getFaviconUrl = (img, badgeNum, options) => {
     const canvas = document.createElement('canvas');
     canvas.width = CANVAS_SIZE;
     canvas.height = CANVAS_SIZE;
@@ -194,7 +193,7 @@
     const ctx = canvas.getContext('2d');
 
     if (img) ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    if (badgeNum) drawBadge(ctx, badgeNum);
+    if (badgeNum) drawBadge(ctx, badgeNum, options);
 
     let url;
     try {
@@ -208,9 +207,9 @@
 
   // init
 
-  const setBadgeFavicon = (img, badgeNum) => {
+  const setBadgeFavicon = (img, badgeNum, options) => {
     const linkElem = getLinkElem();
-    const favIconUrl = getFaviconUrl(img, badgeNum);
+    const favIconUrl = getFaviconUrl(img, badgeNum, options);
     linkElem.href = favIconUrl;
 
     clearIconLinkElems();
@@ -231,10 +230,10 @@
 
   browser.runtime
     .sendMessage({ type: 'START' })
-    .then(({ favIconUrl, badgeNum }) => {
+    .then(({ favIconUrl, badgeNum, options }) => {
       if (badgeNum) {
         getFaviconImg(favIconUrl).then(img => {
-          setBadgeFavicon(img, badgeNum);
+          setBadgeFavicon(img, badgeNum, options);
         });
       } else {
         unsetBadgeFavicon();

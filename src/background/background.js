@@ -1,6 +1,11 @@
-const { runtime, tabs } = browser;
+const { runtime, storage, tabs } = browser;
 
 const MAX_CHARS = 2;
+const STYLE_BORDERED_TEXT = 'STYLE_BORDERED_TEXT';
+
+const defaultOptions = {
+  style: STYLE_BORDERED_TEXT,
+};
 
 const tabsData = {};
 const sentTabsData = {};
@@ -24,6 +29,11 @@ const getBadgeNum = title => {
   return titleNum && parseTitleNum(titleNum);
 };
 
+const getTabsWithBadgeNum = () =>
+  tabs
+    .query({ status: 'complete' })
+    .then(allTab => allTab.filter(({ title }) => getBadgeNum(title)));
+
 const handleStartMessage = tabId => {
   const tabData = tabsData[tabId];
   const sentTabData = sentTabsData[tabId] || {};
@@ -37,7 +47,7 @@ const handleStartMessage = tabId => {
   }
 
   sentTabsData[tabId] = { ...tabData };
-  return Promise.resolve(tabData);
+  return storage.local.get().then(options => ({ ...tabData, options }));
 };
 
 const handleSetEndMessage = (tabId, { favIconUrl }) => {
@@ -88,6 +98,21 @@ runtime.onMessage.addListener((message, { tab }) => {
   }
 });
 
+storage.onChanged.addListener(changes => {
+  const hasChange = Object.values(changes).some(
+    ({ newValue, oldValue }) => newValue !== oldValue,
+  );
+  if (!hasChange) return;
+
+  getTabsWithBadgeNum().then(allTab => {
+    allTab.forEach(tab => {
+      sentTabsData[tab.id] = undefined;
+
+      tabs.executeScript(tab.id, { file: '/content/content.js' });
+    });
+  });
+});
+
 tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
   if (tabId === tabs.TAB_ID_NONE) return;
 
@@ -126,16 +151,20 @@ tabs.onRemoved.addListener(tabId => {
 
 // init
 
-tabs.query({ status: 'complete' }).then(allTab => {
-  allTab.forEach(({ id, title }) => {
-    const badgeNum = getBadgeNum(title);
-    if (!badgeNum) return;
+storage.local
+  .get()
+  .then(options => storage.local.set({ ...defaultOptions, ...options }))
+  .then(getTabsWithBadgeNum)
+  .then(allTab => {
+    allTab.forEach(({ id }) => {
+      tabsData[id] = {
+        initial: true,
+        favIconUrl: 'clear',
+      };
 
-    tabsData[id] = {
-      initial: true,
-      favIconUrl: 'clear',
-    };
-
-    tabs.executeScript(id, { file: '/content/content.js' });
+      tabs.executeScript(id, { file: '/content/content.js' });
+    });
+  })
+  .catch(err => {
+    console.log(err);
   });
-});
