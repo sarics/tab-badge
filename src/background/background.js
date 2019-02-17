@@ -24,22 +24,46 @@ const getBadgeNum = title => {
   return titleNum && parseTitleNum(titleNum);
 };
 
-const sendTabData = tabId =>
-  new Promise((resolve, reject) => {
-    const tabData = tabsData[tabId];
-    const sentTabData = sentTabsData[tabId] || {};
+const handleStartMessage = tabId => {
+  const tabData = tabsData[tabId];
+  const sentTabData = sentTabsData[tabId] || {};
 
-    if (
-      !tabData ||
-      (tabData.badgeNum === sentTabData.badgeNum &&
-        tabData.favIconUrl === sentTabData.favIconUrl)
-    ) {
-      return reject();
-    }
+  if (
+    !tabData ||
+    (tabData.badgeNum === sentTabData.badgeNum &&
+      tabData.favIconUrl === sentTabData.favIconUrl)
+  ) {
+    return Promise.reject();
+  }
 
-    sentTabsData[tabId] = { ...tabData };
-    return resolve(tabData);
-  });
+  sentTabsData[tabId] = { ...tabData };
+  return Promise.resolve(tabData);
+};
+
+const handleSetEndMessage = (tabId, { favIconUrl }) => {
+  tabsBadgeFavIcons[tabId] = favIconUrl;
+
+  return false;
+};
+
+const handleUnsetEndMessage = (
+  tabId,
+  { hadLinkElem },
+  { favIconUrl, title },
+) => {
+  tabsBadgeFavIcons[tabId] = undefined;
+
+  if (tabsData[tabId].initial && !hadLinkElem) {
+    tabsData[tabId] = {
+      favIconUrl,
+      badgeNum: getBadgeNum(title),
+    };
+
+    tabs.executeScript(tabId, { file: '/content/content.js' });
+  }
+
+  return false;
+};
 
 const clearTabData = tabId => {
   tabsData[tabId] = undefined;
@@ -47,12 +71,29 @@ const clearTabData = tabId => {
   tabsBadgeFavIcons[tabId] = undefined;
 };
 
+// listeners
+
+runtime.onMessage.addListener((message, { tab }) => {
+  const tabId = tab.id;
+
+  switch (message.type) {
+    case 'START':
+      return handleStartMessage(tabId);
+    case 'SET_END':
+      return handleSetEndMessage(tabId, message);
+    case 'UNSET_END':
+      return handleUnsetEndMessage(tabId, message, tab);
+    default:
+      return false;
+  }
+});
+
 tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
   if (tabId === tabs.TAB_ID_NONE) return;
 
   if (changeInfo.status === 'loading') clearTabData(tabId);
 
-  const tabData = tabsData[tabId] || {};
+  const { initial, ...tabData } = tabsData[tabId] || {};
   const newTabData = { ...tabData };
 
   if (
@@ -62,8 +103,8 @@ tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
     newTabData.favIconUrl = tabInfo.favIconUrl;
   }
 
-  if (changeInfo.title) {
-    newTabData.badgeNum = getBadgeNum(changeInfo.title);
+  if (initial || changeInfo.title) {
+    newTabData.badgeNum = getBadgeNum(tabInfo.title);
   }
 
   if (
@@ -83,16 +124,18 @@ tabs.onRemoved.addListener(tabId => {
   clearTabData(tabId);
 });
 
-runtime.onMessage.addListener((message, sender) => {
-  const tabId = sender.tab.id;
+// init
 
-  if (message.type === 'START') {
-    return sendTabData(tabId);
-  }
+tabs.query({ status: 'complete' }).then(allTab => {
+  allTab.forEach(({ id, title }) => {
+    const badgeNum = getBadgeNum(title);
+    if (!badgeNum) return;
 
-  if (message.type === 'END') {
-    tabsBadgeFavIcons[tabId] = message.favIconUrl;
-  }
+    tabsData[id] = {
+      initial: true,
+      favIconUrl: 'clear',
+    };
 
-  return false;
+    tabs.executeScript(id, { file: '/content/content.js' });
+  });
 });

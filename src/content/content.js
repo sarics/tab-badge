@@ -209,25 +209,24 @@
   // init
 
   const setBadgeFavicon = (img, badgeNum) => {
+    const linkElem = getLinkElem();
     const favIconUrl = getFaviconUrl(img, badgeNum);
+    linkElem.href = favIconUrl;
 
-    if (favIconUrl) {
-      const linkElem = getLinkElem();
-      linkElem.href = favIconUrl;
+    clearIconLinkElems();
+    if (!linkElem.parentElement) document.head.appendChild(linkElem);
 
-      clearIconLinkElems();
-      if (!linkElem.parentElement) document.head.appendChild(linkElem);
-
-      browser.runtime.sendMessage({ type: 'END', favIconUrl });
-    }
+    browser.runtime.sendMessage({ type: 'SET_END', favIconUrl });
   };
 
   const unsetBadgeFavicon = () => {
     const linkElem = getLinkElem();
+    const hadLinkElem = !!linkElem.parentElement;
 
-    document.head.removeChild(linkElem);
-
+    if (hadLinkElem) document.head.removeChild(linkElem);
     resetIconLinkElems();
+
+    browser.runtime.sendMessage({ type: 'UNSET_END', hadLinkElem });
   };
 
   browser.runtime
