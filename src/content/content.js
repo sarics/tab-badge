@@ -1,55 +1,66 @@
-(function TabBadge(document, browser) {
+(function TabBadge() {
+  const ICON_LINKS_HREF_DATA_KEY = 'scsTabBadgeOrigHref';
+  const LINK_ELEM_ID = 'scs-tab-badge-favicon';
   const CANVAS_SIZE = 16;
-  const STYLE_ROUND_BG_TEXT = Symbol('RoundBgText');
-  const STYLE_RECT_BG_TEXT = Symbol('RectBgText');
-  const STYLE_BORDERED_TEXT = Symbol('BorderedText');
+  const STYLE_ROUND_BG_TEXT = 'STYLE_ROUND_BG_TEXT';
+  const STYLE_RECT_BG_TEXT = 'STYLE_RECT_BG_TEXT';
+  const STYLE_BORDERED_TEXT = 'STYLE_BORDERED_TEXT';
 
   // TODO make these configurable
-  const MAX_CHARS = 2;
   const FONT_SIZE = 9;
-  const STYLE = STYLE_ROUND_BG_TEXT;
-
-  const createLinkElem = () => {
-    const linkElem = document.createElement('link');
-    linkElem.rel = 'icon';
-    linkElem.type = 'image/png';
-
-    document.head.appendChild(linkElem);
-
-    return linkElem;
-  };
+  const style = STYLE_BORDERED_TEXT;
 
   const getLinkElem = () => {
-    const linkElems = Array.from(
-      document.head.querySelectorAll('link[rel*="icon"]'),
-    ).filter(linkElem => Array.from(linkElem.relList).includes('icon'));
+    const selfLinkElem = document.getElementById(LINK_ELEM_ID);
+    if (selfLinkElem) return selfLinkElem;
 
-    if (!linkElems.length) return createLinkElem();
-    if (linkElems.length === 1) return linkElems[0];
+    const linkElem = document.createElement('link');
+    linkElem.id = LINK_ELEM_ID;
+    linkElem.rel = 'icon';
+    linkElem.type = 'image/png';
+    linkElem.sizes = '16x16';
 
-    const linkElemsBySize = linkElems.reduce((lEBS, linkElem) => {
-      if (!linkElem.sizes.length) return lEBS.concat([[16, linkElem]]);
-
-      const linkElemBySizes = Array.from(linkElem.sizes).map(size => [
-        parseInt(size, 10),
-        linkElem,
-      ]);
-      return lEBS.concat(linkElemBySizes);
-    }, []);
-
-    const [, linkElemSize16] =
-      linkElemsBySize.find(([size]) => size === 16) || [];
-    if (linkElemSize16) return linkElemSize16;
-
-    const [[, linkElem]] = linkElemsBySize.sort(
-      ([aSize], [bSize]) => aSize - bSize,
-    );
     return linkElem;
   };
 
-  const getFaviconImg = url =>
+  const getIconLinkElems = () => {
+    const linkElems = document.head.querySelectorAll('link[rel*="icon"]');
+    return Array.from(linkElems).filter(
+      linkElem =>
+        linkElem.id !== LINK_ELEM_ID &&
+        Array.from(linkElem.relList).includes('icon'),
+    );
+  };
+  const clearIconLinkElems = () => {
+    getIconLinkElems().forEach(linkElem => {
+      if (linkElem.dataset[ICON_LINKS_HREF_DATA_KEY]) {
+        return;
+      }
+
+      const { href } = linkElem;
+      /* eslint-disable no-param-reassign */
+      linkElem.dataset[ICON_LINKS_HREF_DATA_KEY] = href;
+      linkElem.href = '';
+      /* eslint-enable no-param-reassign */
+    });
+  };
+  const resetIconLinkElems = () => {
+    getIconLinkElems().forEach(linkElem => {
+      if (!linkElem.dataset[ICON_LINKS_HREF_DATA_KEY]) {
+        return;
+      }
+
+      const href = linkElem.dataset[ICON_LINKS_HREF_DATA_KEY];
+      /* eslint-disable no-param-reassign */
+      delete linkElem.dataset[ICON_LINKS_HREF_DATA_KEY];
+      linkElem.href = href;
+      /* eslint-enable no-param-reassign */
+    });
+  };
+
+  const getFaviconImg = dataUrl =>
     new Promise(resolve => {
-      if (!url) {
+      if (!dataUrl) {
         resolve();
         return;
       }
@@ -57,36 +68,11 @@
       const handleError = () => resolve();
       const handleImgLoad = e => resolve(e.target);
 
-      const createImg = dataUrl => {
-        const img = new Image();
-        img.addEventListener('load', handleImgLoad);
-        img.addEventListener('error', handleError);
-        img.src = dataUrl;
-      };
-
-      browser.runtime
-        .sendMessage({ url })
-        .then(createImg)
-        .catch(handleError);
+      const img = new Image();
+      img.addEventListener('load', handleImgLoad);
+      img.addEventListener('error', handleError);
+      img.src = dataUrl;
     });
-
-  const parseTitleNum = numStr => {
-    const num = parseInt(numStr, 10);
-    if (Number.isNaN(num) || num === 0) return undefined;
-
-    const hasPlus = numStr.endsWith('+');
-    const maxPlusNum = 10 ** (MAX_CHARS - 1) - 1;
-    const maxNum = hasPlus ? maxPlusNum : 10 ** MAX_CHARS - 1;
-
-    if (num > maxNum) return `${maxPlusNum}+`;
-    if (hasPlus) return `${num}+`;
-    return num.toString();
-  };
-
-  const getBadgeNum = titleElem => {
-    const [, titleNum] = titleElem.innerText.match(/\((\d+\+?)\)/) || [];
-    return titleNum && parseTitleNum(titleNum);
-  };
 
   const drawRoundBgText = (ctx, badgeNum) => {
     const BADGE_RADIUS = (FONT_SIZE + 1) / 2;
@@ -188,7 +174,7 @@
   };
 
   const drawBadge = (ctx, badgeNum) => {
-    switch (STYLE) {
+    switch (style) {
       case STYLE_ROUND_BG_TEXT:
         return drawRoundBgText(ctx, badgeNum);
       case STYLE_RECT_BG_TEXT:
@@ -200,45 +186,59 @@
     }
   };
 
-  const setFaviconBadge = (linkElem, titleElem, canvas, img) => {
-    const ctx = canvas.getContext('2d');
-    const badgeNum = getBadgeNum(titleElem);
+  const getFaviconUrl = (img, badgeNum) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
 
-    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    ctx.beginPath();
+    const ctx = canvas.getContext('2d');
 
     if (img) ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
     if (badgeNum) drawBadge(ctx, badgeNum);
 
+    let url;
     try {
-      const url = canvas.toDataURL();
-      linkElem.href = url; // eslint-disable-line no-param-reassign
+      url = canvas.toDataURL();
     } catch (err) {
       console.error(err);
     }
+
+    return url;
   };
 
   // init
 
-  const linkElem = getLinkElem();
-  const titleElem = document.head.querySelector('title');
-  const canvas = document.createElement('canvas');
-  canvas.width = CANVAS_SIZE;
-  canvas.height = CANVAS_SIZE;
+  const setBadgeFavicon = (img, badgeNum) => {
+    const favIconUrl = getFaviconUrl(img, badgeNum);
 
-  document.body.appendChild(canvas);
+    if (favIconUrl) {
+      const linkElem = getLinkElem();
+      linkElem.href = favIconUrl;
 
-  const start = img => {
-    setFaviconBadge(linkElem, titleElem, canvas, img);
+      clearIconLinkElems();
+      if (!linkElem.parentElement) document.head.appendChild(linkElem);
 
-    const titleObserver = new MutationObserver(() => {
-      setFaviconBadge(linkElem, titleElem, canvas, img);
-    });
-
-    titleObserver.observe(titleElem, {
-      childList: true,
-    });
+      browser.runtime.sendMessage({ type: 'END', favIconUrl });
+    }
   };
 
-  getFaviconImg(linkElem.href).then(start);
-})(document, browser);
+  const unsetBadgeFavicon = () => {
+    const linkElem = getLinkElem();
+
+    document.head.removeChild(linkElem);
+
+    resetIconLinkElems();
+  };
+
+  browser.runtime
+    .sendMessage({ type: 'START' })
+    .then(({ favIconUrl, badgeNum }) => {
+      if (badgeNum) {
+        getFaviconImg(favIconUrl).then(img => {
+          setBadgeFavicon(img, badgeNum);
+        });
+      } else {
+        unsetBadgeFavicon();
+      }
+    });
+})();
