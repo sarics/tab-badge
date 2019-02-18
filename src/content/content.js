@@ -6,9 +6,6 @@
   const STYLE_RECT_BG_TEXT = 'STYLE_RECT_BG_TEXT';
   const STYLE_BORDERED_TEXT = 'STYLE_BORDERED_TEXT';
 
-  // TODO make these configurable
-  const FONT_SIZE = 9;
-
   const getLinkElem = () => {
     const selfLinkElem = document.getElementById(LINK_ELEM_ID);
     if (selfLinkElem) return selfLinkElem;
@@ -73,11 +70,11 @@
       img.src = dataUrl;
     });
 
-  const drawRoundBgText = (ctx, badgeNum) => {
-    const BADGE_RADIUS = (FONT_SIZE + 1) / 2;
+  const drawRoundBgText = (ctx, badgeNum, { fontSize }) => {
+    const BADGE_RADIUS = (fontSize + 1) / 2;
     const BADGE_PADDING_X = 2;
 
-    ctx.font = `bold ${FONT_SIZE}px sans-serif`;
+    ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'center';
 
     const text = ctx.measureText(badgeNum);
@@ -119,11 +116,11 @@
     ctx.fillText(badgeNum, textX, textY);
   };
 
-  const drawRectBgText = (ctx, badgeNum) => {
-    const BADGE_HEIGHT = FONT_SIZE + 1;
+  const drawRectBgText = (ctx, badgeNum, { fontSize }) => {
+    const BADGE_HEIGHT = fontSize + 1;
     const BADGE_PADDING_X = 1;
 
-    ctx.font = `bold ${FONT_SIZE}px sans-serif`;
+    ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'right';
 
     const text = ctx.measureText(badgeNum);
@@ -148,14 +145,14 @@
     ctx.fillText(badgeNum, textX, textY);
   };
 
-  const drawBorderedText = (ctx, badgeNum) => {
+  const drawBorderedText = (ctx, badgeNum, { fontSize }) => {
     const TEXT_BORDER = 1;
 
     const textX = CANVAS_SIZE - TEXT_BORDER;
     const textY = CANVAS_SIZE - TEXT_BORDER;
 
     ctx.fillStyle = 'white';
-    ctx.font = `${FONT_SIZE}px sans-serif`;
+    ctx.font = `${fontSize}px sans-serif`;
     ctx.textAlign = 'right';
     ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
     ctx.shadowBlur = 1;
@@ -175,11 +172,11 @@
   const drawBadge = (ctx, badgeNum, options) => {
     switch (options.style) {
       case STYLE_ROUND_BG_TEXT:
-        return drawRoundBgText(ctx, badgeNum);
+        return drawRoundBgText(ctx, badgeNum, options);
       case STYLE_RECT_BG_TEXT:
-        return drawRectBgText(ctx, badgeNum);
+        return drawRectBgText(ctx, badgeNum, options);
       case STYLE_BORDERED_TEXT:
-        return drawBorderedText(ctx, badgeNum);
+        return drawBorderedText(ctx, badgeNum, options);
       default:
         return undefined;
     }
@@ -199,7 +196,7 @@
     try {
       url = canvas.toDataURL();
     } catch (err) {
-      console.error(err);
+      // console.error(err);
     }
 
     return url;

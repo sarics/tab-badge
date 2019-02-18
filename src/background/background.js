@@ -31,6 +31,7 @@ window.OPTIONS = [
 
   const defaultOptions = {
     style: STYLE_BORDERED_TEXT,
+    fontSize: 9,
   };
 
   const tabsData = {};
