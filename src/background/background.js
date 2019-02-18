@@ -177,20 +177,28 @@ window.OPTIONS = [
 
   // init
 
+  const setInitTabData = ({ id, title, favIconUrl }) => {
+    const badgeNum = getBadgeNum(title);
+
+    if (badgeNum) {
+      tabsData[id] = {
+        initial: true,
+        favIconUrl: 'clear',
+      };
+
+      tabs.executeScript(id, { file: '/content/content.js' });
+    } else {
+      tabsData[id] = {
+        favIconUrl,
+      };
+    }
+  };
+
   storage.local
     .get()
     .then(options => storage.local.set({ ...defaultOptions, ...options }))
-    .then(getTabsWithBadgeNum)
-    .then(allTab => {
-      allTab.forEach(({ id }) => {
-        tabsData[id] = {
-          initial: true,
-          favIconUrl: 'clear',
-        };
-
-        tabs.executeScript(id, { file: '/content/content.js' });
-      });
-    })
+    .then(() => tabs.query({ status: 'complete' }))
+    .then(allTab => allTab.forEach(setInitTabData))
     .catch(err => {
       console.log(err);
     });
