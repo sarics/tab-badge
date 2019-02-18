@@ -4,7 +4,7 @@
   "description": "",
   "version": "1.0.0",
 
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
       "id": "tabbadge@sarics"
     }
