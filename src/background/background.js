@@ -1,206 +1,180 @@
-const STYLE_BORDERED_TEXT = 'STYLE_BORDERED_TEXT';
-const STYLE_ROUND_BG_TEXT = 'STYLE_ROUND_BG_TEXT';
-const STYLE_RECT_BG_TEXT = 'STYLE_RECT_BG_TEXT';
+import { STYLE_BORDERED_TEXT } from '../constants/badgeStyles';
 
-window.OPTIONS = [
-  {
-    key: 'style',
-    label: 'Style',
-    type: 'select',
-    options: [
-      {
-        value: STYLE_BORDERED_TEXT,
-        label: 'Bordered',
-      },
-      {
-        value: STYLE_ROUND_BG_TEXT,
-        label: 'Rounded background',
-      },
-      {
-        value: STYLE_RECT_BG_TEXT,
-        label: 'Rectangular background',
-      },
-    ],
-  },
-];
+const { runtime, storage, tabs } = browser;
 
-(function TabBadgeBg() {
-  const { runtime, storage, tabs } = browser;
+const MAX_CHARS = 2;
 
-  const MAX_CHARS = 2;
+const defaultOptions = {
+  style: STYLE_BORDERED_TEXT,
+  fontSize: 9,
+};
 
-  const defaultOptions = {
-    style: STYLE_BORDERED_TEXT,
-    fontSize: 9,
-  };
+const tabsData = {};
+const sentTabsData = {};
+const tabsBadgeFavIcons = {};
 
-  const tabsData = {};
-  const sentTabsData = {};
-  const tabsBadgeFavIcons = {};
+const parseTitleNum = numStr => {
+  const num = parseInt(numStr, 10);
+  if (Number.isNaN(num) || num === 0) return undefined;
 
-  const parseTitleNum = numStr => {
-    const num = parseInt(numStr, 10);
-    if (Number.isNaN(num) || num === 0) return undefined;
+  const hasPlus = numStr.endsWith('+');
+  const maxPlusNum = 10 ** (MAX_CHARS - 1) - 1;
+  const maxNum = hasPlus ? maxPlusNum : 10 ** MAX_CHARS - 1;
 
-    const hasPlus = numStr.endsWith('+');
-    const maxPlusNum = 10 ** (MAX_CHARS - 1) - 1;
-    const maxNum = hasPlus ? maxPlusNum : 10 ** MAX_CHARS - 1;
+  if (num > maxNum) return `${maxPlusNum}+`;
+  if (hasPlus) return `${num}+`;
+  return num.toString();
+};
 
-    if (num > maxNum) return `${maxPlusNum}+`;
-    if (hasPlus) return `${num}+`;
-    return num.toString();
-  };
+const getBadgeNum = title => {
+  const [, titleNum] = title.match(/\((\d+\+?)\)/) || [];
+  return titleNum && parseTitleNum(titleNum);
+};
 
-  const getBadgeNum = title => {
-    const [, titleNum] = title.match(/\((\d+\+?)\)/) || [];
-    return titleNum && parseTitleNum(titleNum);
-  };
+const getTabsWithBadgeNum = () =>
+  tabs
+    .query({ status: 'complete' })
+    .then(allTab => allTab.filter(({ title }) => getBadgeNum(title)));
 
-  const getTabsWithBadgeNum = () =>
-    tabs
-      .query({ status: 'complete' })
-      .then(allTab => allTab.filter(({ title }) => getBadgeNum(title)));
+const handleStartMessage = tabId => {
+  const tabData = tabsData[tabId];
+  const sentTabData = sentTabsData[tabId] || {};
 
-  const handleStartMessage = tabId => {
-    const tabData = tabsData[tabId];
-    const sentTabData = sentTabsData[tabId] || {};
+  if (
+    !tabData ||
+    (tabData.badgeNum === sentTabData.badgeNum &&
+      tabData.favIconUrl === sentTabData.favIconUrl)
+  ) {
+    return Promise.reject();
+  }
 
-    if (
-      !tabData ||
-      (tabData.badgeNum === sentTabData.badgeNum &&
-        tabData.favIconUrl === sentTabData.favIconUrl)
-    ) {
-      return Promise.reject();
-    }
+  sentTabsData[tabId] = { ...tabData };
+  return storage.local.get().then(options => ({ ...tabData, options }));
+};
 
-    sentTabsData[tabId] = { ...tabData };
-    return storage.local.get().then(options => ({ ...tabData, options }));
-  };
+const handleSetEndMessage = (tabId, { favIconUrl }) => {
+  tabsBadgeFavIcons[tabId] = favIconUrl;
 
-  const handleSetEndMessage = (tabId, { favIconUrl }) => {
-    tabsBadgeFavIcons[tabId] = favIconUrl;
+  return false;
+};
 
-    return false;
-  };
+const handleUnsetEndMessage = (
+  tabId,
+  { hadLinkElem },
+  { favIconUrl, title },
+) => {
+  tabsBadgeFavIcons[tabId] = undefined;
 
-  const handleUnsetEndMessage = (
-    tabId,
-    { hadLinkElem },
-    { favIconUrl, title },
-  ) => {
-    tabsBadgeFavIcons[tabId] = undefined;
+  if (tabsData[tabId].initial && !hadLinkElem) {
+    tabsData[tabId] = {
+      favIconUrl,
+      badgeNum: getBadgeNum(title),
+    };
 
-    if (tabsData[tabId].initial && !hadLinkElem) {
-      tabsData[tabId] = {
-        favIconUrl,
-        badgeNum: getBadgeNum(title),
-      };
+    tabs.executeScript(tabId, { file: '/content/content.js' });
+  }
 
-      tabs.executeScript(tabId, { file: '/content/content.js' });
-    }
+  return false;
+};
 
-    return false;
-  };
+const clearTabData = tabId => {
+  tabsData[tabId] = undefined;
+  sentTabsData[tabId] = undefined;
+  tabsBadgeFavIcons[tabId] = undefined;
+};
 
-  const clearTabData = tabId => {
-    tabsData[tabId] = undefined;
-    sentTabsData[tabId] = undefined;
-    tabsBadgeFavIcons[tabId] = undefined;
-  };
+// listeners
 
-  // listeners
+runtime.onMessage.addListener((message, { tab }) => {
+  const tabId = tab.id;
 
-  runtime.onMessage.addListener((message, { tab }) => {
-    const tabId = tab.id;
+  switch (message.type) {
+    case 'START':
+      return handleStartMessage(tabId);
+    case 'SET_END':
+      return handleSetEndMessage(tabId, message);
+    case 'UNSET_END':
+      return handleUnsetEndMessage(tabId, message, tab);
+    default:
+      return false;
+  }
+});
 
-    switch (message.type) {
-      case 'START':
-        return handleStartMessage(tabId);
-      case 'SET_END':
-        return handleSetEndMessage(tabId, message);
-      case 'UNSET_END':
-        return handleUnsetEndMessage(tabId, message, tab);
-      default:
-        return false;
-    }
-  });
+storage.onChanged.addListener(changes => {
+  const hasChange = Object.values(changes).some(
+    ({ newValue, oldValue }) => newValue !== oldValue,
+  );
+  if (!hasChange) return;
 
-  storage.onChanged.addListener(changes => {
-    const hasChange = Object.values(changes).some(
-      ({ newValue, oldValue }) => newValue !== oldValue,
-    );
-    if (!hasChange) return;
+  getTabsWithBadgeNum().then(allTab => {
+    allTab.forEach(tab => {
+      sentTabsData[tab.id] = undefined;
 
-    getTabsWithBadgeNum().then(allTab => {
-      allTab.forEach(tab => {
-        sentTabsData[tab.id] = undefined;
-
-        tabs.executeScript(tab.id, { file: '/content/content.js' });
-      });
+      tabs.executeScript(tab.id, { file: '/content/content.js' });
     });
   });
+});
 
-  tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
-    if (tabId === tabs.TAB_ID_NONE) return;
+tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
+  if (tabId === tabs.TAB_ID_NONE) return;
 
-    if (changeInfo.status === 'loading') clearTabData(tabId);
+  if (changeInfo.status === 'loading') clearTabData(tabId);
 
-    const { initial, ...tabData } = tabsData[tabId] || {};
-    const newTabData = { ...tabData };
+  const { initial, ...tabData } = tabsData[tabId] || {};
+  const newTabData = { ...tabData };
 
-    if (
-      changeInfo.favIconUrl &&
-      changeInfo.favIconUrl !== tabsBadgeFavIcons[tabId]
-    ) {
-      newTabData.favIconUrl = tabInfo.favIconUrl;
-    }
+  if (
+    changeInfo.favIconUrl &&
+    changeInfo.favIconUrl !== tabsBadgeFavIcons[tabId]
+  ) {
+    newTabData.favIconUrl = tabInfo.favIconUrl;
+  }
 
-    if (initial || changeInfo.title) {
-      newTabData.badgeNum = getBadgeNum(tabInfo.title);
-    }
+  if (initial || changeInfo.title) {
+    newTabData.badgeNum = getBadgeNum(tabInfo.title);
+  }
 
-    if (
-      tabInfo.status === 'complete' &&
-      (tabData.badgeNum || newTabData.badgeNum) &&
-      (changeInfo.status === 'complete' ||
-        tabData.favIconUrl !== newTabData.favIconUrl ||
-        tabData.badgeNum !== newTabData.badgeNum)
-    ) {
-      tabs.executeScript(tabId, { file: '/content/content.js' });
-    }
+  if (
+    tabInfo.status === 'complete' &&
+    (tabData.badgeNum || newTabData.badgeNum) &&
+    (changeInfo.status === 'complete' ||
+      tabData.favIconUrl !== newTabData.favIconUrl ||
+      tabData.badgeNum !== newTabData.badgeNum)
+  ) {
+    tabs.executeScript(tabId, { file: '/content/content.js' });
+  }
 
-    tabsData[tabId] = newTabData;
+  tabsData[tabId] = newTabData;
+});
+
+tabs.onRemoved.addListener(tabId => {
+  clearTabData(tabId);
+});
+
+// init
+
+const setInitTabData = ({ id, title, favIconUrl }) => {
+  const badgeNum = getBadgeNum(title);
+
+  if (badgeNum) {
+    tabsData[id] = {
+      initial: true,
+      favIconUrl: 'clear',
+    };
+
+    tabs.executeScript(id, { file: '/content/content.js' });
+  } else {
+    tabsData[id] = {
+      favIconUrl,
+    };
+  }
+};
+
+storage.local
+  .get()
+  .then(options => storage.local.set({ ...defaultOptions, ...options }))
+  .then(() => tabs.query({ status: 'complete' }))
+  .then(allTab => allTab.forEach(setInitTabData))
+  .catch(err => {
+    console.log(err);
   });
-
-  tabs.onRemoved.addListener(tabId => {
-    clearTabData(tabId);
-  });
-
-  // init
-
-  const setInitTabData = ({ id, title, favIconUrl }) => {
-    const badgeNum = getBadgeNum(title);
-
-    if (badgeNum) {
-      tabsData[id] = {
-        initial: true,
-        favIconUrl: 'clear',
-      };
-
-      tabs.executeScript(id, { file: '/content/content.js' });
-    } else {
-      tabsData[id] = {
-        favIconUrl,
-      };
-    }
-  };
-
-  storage.local
-    .get()
-    .then(options => storage.local.set({ ...defaultOptions, ...options }))
-    .then(() => tabs.query({ status: 'complete' }))
-    .then(allTab => allTab.forEach(setInitTabData))
-    .catch(err => {
-      console.log(err);
-    });
-})();
