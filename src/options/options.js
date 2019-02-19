@@ -1,5 +1,7 @@
 import { app } from 'hyperapp';
 
+import './options.scss';
+
 import actions from './actions';
 import App from './components/App';
 

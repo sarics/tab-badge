@@ -34,6 +34,14 @@ module.exports = {
           },
         ],
       },
+      {
+        test: /\.scss$/,
+        use: [
+          { loader: 'style-loader' },
+          { loader: 'css-loader' },
+          { loader: 'sass-loader' },
+        ],
+      },
     ],
   },
 
@@ -47,7 +55,8 @@ module.exports = {
       //   to: 'icons',
       // },
       {
-        from: 'options/*.+(html|css)',
+        from: 'options/options.html',
+        to: 'options',
       },
     ]),
   ],
