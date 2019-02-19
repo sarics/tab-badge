@@ -9,18 +9,34 @@ const getTargetValue = ({ type, value }) => {
   }
 };
 
-const handleChange = onChange => e => {
-  const { name } = e.target;
-  const value = getTargetValue(e.target);
-
-  onChange({ name, value });
-};
-
 const FormControl = ({ type, id, value, options, onChange }) => {
+  const handleChange = e => {
+    const { name } = e.target;
+    const newValue = getTargetValue(e.target);
+
+    if (newValue !== value) onChange({ name, value: newValue });
+  };
+
   if (['text', 'number'].includes(type)) {
+    const handleKeyup = e => {
+      if (e.target.type === 'number' && !e.target.value) {
+        e.target.value = value;
+      } else {
+        handleChange(e);
+      }
+    };
+
     return (
-      <div class="control" onchange={handleChange(onChange)}>
-        <input type={type} id={id} class="input" name={id} value={value} />
+      <div class="control">
+        <input
+          type={type}
+          id={id}
+          class="input"
+          name={id}
+          value={value}
+          onkeyup={handleKeyup}
+          onchange={handleChange}
+        />
       </div>
     );
   }
@@ -29,12 +45,7 @@ const FormControl = ({ type, id, value, options, onChange }) => {
     return (
       <div class="control">
         <div class="select is-fullwidth">
-          <select
-            id={id}
-            name={id}
-            value={value}
-            onchange={handleChange(onChange)}
-          >
+          <select id={id} name={id} value={value} onchange={handleChange}>
             {options.map(opt => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
