@@ -1,66 +1,14 @@
-const getOptionsConfig = () =>
-  browser.runtime.getBackgroundPage().then(bgWindow => bgWindow.OPTIONS);
+import { app } from 'hyperapp';
 
-const getOptions = () => browser.storage.local.get();
+import actions from './actions';
+import App from './components/App';
 
-const getOptionsFormControlElem = (type, id, value, options) => {
-  if (type === 'select') {
-    const controlElem = document.createElement('select');
-    controlElem.id = id;
-    controlElem.className = 'browser-style';
+const { storage } = browser;
 
-    options.forEach(opt => {
-      const optionElem = document.createElement('option');
-      optionElem.value = opt.value;
-      optionElem.textContent = opt.label;
-      optionElem.selected = opt.value === value;
+const run = options => {
+  const state = { ...options };
 
-      controlElem.appendChild(optionElem);
-    });
-
-    return controlElem;
-  }
-
-  return undefined;
+  app(state, actions, App, document.getElementById('main'));
 };
 
-const handleOptionChange = key => e => {
-  const { value } = e.target;
-
-  browser.storage.local.set({ [key]: value });
-};
-
-const buildOptionsForm = (optionsConfig, options) => {
-  const mainElem = document.getElementById('main');
-
-  optionsConfig.forEach(({ key, label, type, ...rest }) => {
-    const formGroupElem = document.createElement('div');
-
-    const labelElem = document.createElement('label');
-    labelElem.htmlFor = key;
-    labelElem.textContent = `${label}:`;
-    formGroupElem.appendChild(labelElem);
-
-    const controlWrapperElem = document.createElement('div');
-    controlWrapperElem.className = 'browser-style';
-
-    const controlElem = getOptionsFormControlElem(
-      type,
-      key,
-      options[key],
-      rest.options,
-    );
-    controlElem.addEventListener('change', handleOptionChange(key));
-
-    controlWrapperElem.appendChild(controlElem);
-    formGroupElem.appendChild(controlWrapperElem);
-
-    mainElem.appendChild(formGroupElem);
-  });
-};
-
-Promise.all([getOptionsConfig(), getOptions()]).then(
-  ([optionsConfig, options]) => {
-    buildOptionsForm(optionsConfig, options);
-  },
-);
+storage.local.get().then(run);
