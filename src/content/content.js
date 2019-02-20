@@ -1,4 +1,4 @@
-import drawBadge from './drawBadge';
+import getBadgeCanvas from './getBadgeCanvas';
 
 const ICON_LINKS_HREF_DATA_KEY = 'scsTabBadgeOrigHref';
 const LINK_ELEM_ID = 'scs-tab-badge-favicon';
@@ -52,7 +52,7 @@ const resetIconLinkElems = () => {
   });
 };
 
-const getFaviconImg = dataUrl =>
+const getFavIconImg = dataUrl =>
   new Promise(resolve => {
     if (!dataUrl) {
       resolve();
@@ -68,31 +68,32 @@ const getFaviconImg = dataUrl =>
     img.src = dataUrl;
   });
 
-const getFaviconUrl = (img, badgeNum, options) => {
-  const canvas = document.createElement('canvas');
-  canvas.width = CANVAS_SIZE;
-  canvas.height = CANVAS_SIZE;
+const getBadgeFavIconUrl = ({ favIconUrl, badgeNum, options }) => {
+  if (!badgeNum) return Promise.reject();
 
-  const ctx = canvas.getContext('2d');
+  return getFavIconImg(favIconUrl).then(img => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
 
-  if (img) ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
-  drawBadge(ctx, badgeNum, options);
+    if (img) ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-  let url;
-  try {
-    url = canvas.toDataURL();
-  } catch (err) {
-    // console.error(err);
-  }
+    const badgeCanvas = getBadgeCanvas(badgeNum, options);
+    ctx.drawImage(
+      badgeCanvas,
+      CANVAS_SIZE - badgeCanvas.width,
+      CANVAS_SIZE - badgeCanvas.height,
+    );
 
-  return url;
+    return canvas.toDataURL();
+  });
 };
 
 // init
 
-const setBadgeFavicon = (img, badgeNum, options) => {
+const setBadgeFavIcon = favIconUrl => {
   const linkElem = getLinkElem();
-  const favIconUrl = getFaviconUrl(img, badgeNum, options);
   linkElem.href = favIconUrl;
 
   clearIconLinkElems();
@@ -101,7 +102,9 @@ const setBadgeFavicon = (img, badgeNum, options) => {
   browser.runtime.sendMessage({ type: 'SET_END', favIconUrl });
 };
 
-const unsetBadgeFavicon = () => {
+const unsetBadgeFavIcon = err => {
+  if (err) console.log(err);
+
   const linkElem = getLinkElem();
   const hadLinkElem = !!linkElem.parentElement;
 
@@ -113,12 +116,6 @@ const unsetBadgeFavicon = () => {
 
 browser.runtime
   .sendMessage({ type: 'START' })
-  .then(({ favIconUrl, badgeNum, options }) => {
-    if (badgeNum) {
-      getFaviconImg(favIconUrl).then(img => {
-        setBadgeFavicon(img, badgeNum, options);
-      });
-    } else {
-      unsetBadgeFavicon();
-    }
-  });
+  .then(getBadgeFavIconUrl)
+  .then(setBadgeFavIcon)
+  .catch(unsetBadgeFavIcon);
