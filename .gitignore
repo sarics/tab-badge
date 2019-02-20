@@ -1,4 +1,4 @@
-build/
-dist/
-example/
-node_modules/
+/build
+/dist
+/example
+/node_modules
