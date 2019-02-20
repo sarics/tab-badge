@@ -1,13 +1,8 @@
-import { STYLE_BORDERED_TEXT } from '../constants/badgeStyles';
+import OPTIONS from '../constants/options';
 
 const { runtime, storage, tabs } = browser;
 
 const MAX_CHARS = 2;
-
-const defaultOptions = {
-  style: STYLE_BORDERED_TEXT,
-  fontSize: 9,
-};
 
 const tabsData = {};
 const sentTabsData = {};
@@ -153,6 +148,18 @@ tabs.onRemoved.addListener(tabId => {
 
 // init
 
+const setInitStorage = options => {
+  const newOptions = OPTIONS.reduce(
+    (opts, { key, defaultValue }) => ({
+      ...opts,
+      [key]: typeof options[key] === 'undefined' ? defaultValue : options[key],
+    }),
+    {},
+  );
+
+  return storage.local.set(newOptions);
+};
+
 const setInitTabData = ({ id, title, favIconUrl }) => {
   const badgeNum = getBadgeNum(title);
 
@@ -172,7 +179,7 @@ const setInitTabData = ({ id, title, favIconUrl }) => {
 
 storage.local
   .get()
-  .then(options => storage.local.set({ ...defaultOptions, ...options }))
+  .then(setInitStorage)
   .then(() => tabs.query({ status: 'complete' }))
   .then(allTab => allTab.forEach(setInitTabData))
   .catch(err => {
