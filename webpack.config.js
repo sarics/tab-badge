@@ -6,7 +6,7 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   context: path.resolve(__dirname, 'src'),
 
-  mode: process.env.NODE_ENV,
+  mode: isProd ? 'production' : 'development',
 
   entry: {
     background: './background/background.js',
@@ -38,7 +38,12 @@ module.exports = {
         test: /\.scss$/,
         use: [
           { loader: 'style-loader' },
-          { loader: 'css-loader' },
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+            },
+          },
           { loader: 'sass-loader' },
         ],
       },
