@@ -1,4 +1,5 @@
 const path = require('path');
+const cssnano = require('cssnano');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -41,11 +42,21 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              importLoaders: 1,
+              importLoaders: isProd ? 2 : 1,
+            },
+          },
+          isProd && {
+            loader: 'postcss-loader',
+            options: {
+              plugins: [
+                cssnano({
+                  preset: 'default',
+                }),
+              ],
             },
           },
           { loader: 'sass-loader' },
-        ],
+        ].filter(Boolean),
       },
     ],
   },
