@@ -7,12 +7,13 @@
   "license": "ISC",
   "scripts": {
     "clean": "rimraf dist",
-    "run:webpack": "webpack --watch",
+    "run:webpack": "cross-env NODE_ENV=development webpack --watch",
     "run:web-ext": "web-ext run -s dist",
-    "build:webpack": "webpack",
+    "build:webpack:dev": "cross-env NODE_ENV=development webpack",
+    "build:webpack:prod": "cross-env NODE_ENV=production webpack",
     "build:web-ext": "web-ext build -o -s dist -a build",
-    "start": "cross-env NODE_ENV=development npm-run-all -l clean build:webpack -p -r run:*",
-    "build": "cross-env NODE_ENV=production npm-run-all clean build:webpack build:web-ext"
+    "start": "npm-run-all -l clean build:webpack:dev -p -r run:*",
+    "build": "npm-run-all clean build:webpack:prod build:web-ext"
   },
   "dependencies": {
     "bulma": "0.7.4",
