@@ -71,7 +71,7 @@ module.exports = {
       //   to: 'icons',
       // },
       {
-        from: 'options/options.html',
+        from: 'options/*.html',
         to: 'options',
       },
     ]),
