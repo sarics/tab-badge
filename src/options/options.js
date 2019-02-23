@@ -1,6 +1,8 @@
-import { app } from 'hyperapp';
+import { h, app } from 'hyperapp';
 
 import './options.scss';
+
+import OPTIONS from '../constants/options';
 
 import actions from './actions';
 import App from './components/App';
@@ -8,9 +10,14 @@ import App from './components/App';
 const { storage } = browser;
 
 const run = options => {
-  const state = { options };
+  const state = {
+    fields: OPTIONS,
+    options,
+  };
 
-  app(state, actions, App, document.getElementById('main'));
+  const view = () => <App />;
+
+  app(state, actions, view, document.getElementById('main'));
 };
 
 storage.local.get().then(run);

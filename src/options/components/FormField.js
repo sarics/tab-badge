@@ -1,19 +1,17 @@
 import { h } from 'hyperapp';
 
-import FormControl from './FormControl';
-
-const FormField = ({ key, label, ...props }) => (
+const FormField = ({ label, labelFor }, children) => (
   <div class="field is-horizontal">
     <div class="field-label is-normal">
-      <label for={key} class="label">
-        {label}
-      </label>
+      {label && (
+        <label for={labelFor} class="label">
+          {label}
+        </label>
+      )}
     </div>
 
     <div class="field-body">
-      <div class="field is-narrow">
-        <FormControl id={key} {...props} />
-      </div>
+      <div class="field is-narrow">{children}</div>
     </div>
   </div>
 );

@@ -1,11 +1,10 @@
 import { h } from 'hyperapp';
 
-import OPTIONS from '../../constants/options';
-
 import Badge from './Badge';
 import FormField from './FormField';
+import FormControl from './FormControl';
 
-const App = ({ options }, actions) => (
+const App = () => ({ fields, options }, actions) => (
   <div>
     <section class="hero is-primary">
       <div class="hero-body">
@@ -21,25 +20,23 @@ const App = ({ options }, actions) => (
         <div class="box">
           <h3 class="title is-4">Example</h3>
 
-          <div class="field is-horizontal">
-            <div class="field-label" />
-
-            <div class="field-body">
-              <Badge badgeNum={15} options={options} />
-            </div>
-          </div>
+          <FormField>
+            <Badge badgeNum={15} options={options} />
+          </FormField>
 
           <hr />
 
           <h3 class="title is-4">Options</h3>
 
-          {OPTIONS.map(({ key, ...optCfg }) => (
-            <FormField
-              key={key}
-              value={options[key]}
-              onChange={actions.saveOption}
-              {...optCfg}
-            />
+          {fields.map(({ key, label, ...field }) => (
+            <FormField key={key} label={label} labelFor={key}>
+              <FormControl
+                id={key}
+                value={options[key]}
+                onChange={actions.saveOption}
+                {...field}
+              />
+            </FormField>
           ))}
         </div>
       </div>
