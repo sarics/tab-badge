@@ -13,4 +13,12 @@ export default {
       [name]: value,
     },
   }),
+
+  setExampleValue: ({ name, value }) => state => ({
+    ...state,
+    exampleValues: {
+      ...state.exampleValues,
+      [name]: value,
+    },
+  }),
 };

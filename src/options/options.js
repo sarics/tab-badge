@@ -13,6 +13,9 @@ const run = options => {
   const state = {
     fields: OPTIONS,
     options,
+    exampleValues: {
+      badgeNum: 15,
+    },
   };
 
   const view = () => <App />;

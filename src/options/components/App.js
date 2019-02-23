@@ -4,7 +4,7 @@ import Badge from './Badge';
 import FormField from './FormField';
 import FormControl from './FormControl';
 
-const App = () => ({ fields, options }, actions) => (
+const App = () => ({ fields, options, exampleValues }, actions) => (
   <div>
     <section class="hero is-primary">
       <div class="hero-body">
@@ -21,7 +21,16 @@ const App = () => ({ fields, options }, actions) => (
           <h3 class="title is-4">Example</h3>
 
           <FormField>
-            <Badge badgeNum={15} options={options} />
+            <Badge badgeNum={exampleValues.badgeNum} options={options} />
+          </FormField>
+
+          <FormField label="Badge number" labelFor="badgeNum">
+            <FormControl
+              type="number"
+              id="badgeNum"
+              value={exampleValues.badgeNum}
+              onChange={actions.setExampleValue}
+            />
           </FormField>
 
           <hr />
