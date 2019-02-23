@@ -72,7 +72,6 @@ module.exports = {
       // },
       {
         from: 'options/*.html',
-        to: 'options',
       },
     ]),
   ],

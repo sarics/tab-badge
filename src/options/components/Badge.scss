@@ -1,0 +1,17 @@
+@import '~bulma/sass/utilities/all';
+
+.badge-container {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  background-color: $cyan;
+  overflow: hidden;
+}
+
+.badge {
+  display: block;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  max-width: none;
+}

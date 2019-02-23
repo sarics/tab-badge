@@ -1,4 +1,4 @@
-import getBadgeCanvas from './getBadgeCanvas';
+import getBadgeCanvas from '../utils/getBadgeCanvas';
 
 const ICON_LINKS_HREF_DATA_KEY = 'scsTabBadgeOrigHref';
 const LINK_ELEM_ID = 'scs-tab-badge-favicon';
