@@ -16,33 +16,6 @@ const FormControl = ({ type, id, name, value, options, onChange }) => {
     if (newValue !== value) onChange({ name: target.name, value: newValue });
   };
 
-  if (['text', 'number'].includes(type)) {
-    const handleInput = e => {
-      if (e.target.value) handleChange(e);
-    };
-
-    const handleBlur = e => {
-      if (e.target.value) handleChange(e);
-      else {
-        e.target.value = value;
-      }
-    };
-
-    return (
-      <div class="control">
-        <input
-          type={type}
-          id={id}
-          class="input"
-          name={name || id}
-          value={value}
-          oninput={handleInput}
-          onblur={handleBlur}
-        />
-      </div>
-    );
-  }
-
   if (type === 'select') {
     return (
       <div class="control">
@@ -64,7 +37,30 @@ const FormControl = ({ type, id, name, value, options, onChange }) => {
     );
   }
 
-  return null;
+  const handleInput = e => {
+    if (e.target.value) handleChange(e);
+  };
+
+  const handleBlur = e => {
+    if (e.target.value) handleChange(e);
+    else {
+      e.target.value = value;
+    }
+  };
+
+  return (
+    <div class="control">
+      <input
+        type={type}
+        id={id}
+        class="input"
+        name={name || id}
+        value={value}
+        oninput={handleInput}
+        onblur={handleBlur}
+      />
+    </div>
+  );
 };
 
 export default FormControl;
