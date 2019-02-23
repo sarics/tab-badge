@@ -8,7 +8,7 @@ import App from './components/App';
 const { storage } = browser;
 
 const run = options => {
-  const state = { ...options };
+  const state = { options };
 
   app(state, actions, App, document.getElementById('main'));
 };

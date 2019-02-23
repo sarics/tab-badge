@@ -19,10 +19,13 @@ const FormControl = ({ type, id, value, options, onChange }) => {
 
   if (['text', 'number'].includes(type)) {
     const handleKeyup = e => {
-      if (e.target.type === 'number' && !e.target.value) {
+      if (e.target.value) handleChange(e);
+    };
+
+    const handleBlur = e => {
+      if (e.target.value) handleChange(e);
+      else {
         e.target.value = value;
-      } else {
-        handleChange(e);
       }
     };
 
@@ -35,7 +38,7 @@ const FormControl = ({ type, id, value, options, onChange }) => {
           name={id}
           value={value}
           onkeyup={handleKeyup}
-          onchange={handleChange}
+          onblur={handleBlur}
         />
       </div>
     );

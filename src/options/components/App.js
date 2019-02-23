@@ -5,7 +5,7 @@ import OPTIONS from '../../constants/options';
 import Badge from './Badge';
 import FormField from './FormField';
 
-const App = (state, actions) => (
+const App = ({ options }, actions) => (
   <div>
     <section class="hero is-primary">
       <div class="hero-body">
@@ -25,7 +25,7 @@ const App = (state, actions) => (
             <div class="field-label" />
 
             <div class="field-body">
-              <Badge badgeNum={15} options={state} />
+              <Badge badgeNum={15} options={options} />
             </div>
           </div>
 
@@ -36,8 +36,8 @@ const App = (state, actions) => (
           {OPTIONS.map(({ key, ...optCfg }) => (
             <FormField
               key={key}
-              value={state[key]}
-              onChange={actions.setOption}
+              value={options[key]}
+              onChange={actions.saveOption}
               {...optCfg}
             />
           ))}
