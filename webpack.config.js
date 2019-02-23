@@ -66,10 +66,9 @@ module.exports = {
       {
         from: 'manifest.json',
       },
-      // {
-      //   from: 'icons',
-      //   to: 'icons',
-      // },
+      {
+        from: 'icons/*',
+      },
       {
         from: 'options/*.html',
       },

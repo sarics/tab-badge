@@ -12,13 +12,15 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "run:webpack": "cross-env NODE_ENV=development webpack --watch --colors",
-    "run:web-ext": "web-ext run -s dist",
     "build:webpack:dev": "cross-env NODE_ENV=development webpack",
     "build:webpack:prod": "cross-env NODE_ENV=production webpack",
     "build:web-ext": "web-ext build -o -s dist -a build",
-    "start": "npm-run-all -l clean build:webpack:dev -p -r run:*",
-    "build": "npm-run-all clean build:webpack:prod build:web-ext"
+    "build": "npm-run-all clean build:webpack:prod build:web-ext",
+    "start:webpack": "npm run build:webpack:dev -- --watch --colors",
+    "start:web-ext": "web-ext run -s dist",
+    "start": "npm-run-all -l clean build:webpack:dev -p -r start:*",
+    "lint:web-ext": "web-ext lint -s dist",
+    "lint": "npm-run-all clean build:webpack:prod lint:web-ext"
   },
   "dependencies": {
     "bulma": "0.7.4",
