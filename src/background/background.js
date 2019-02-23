@@ -1,4 +1,5 @@
 import OPTIONS from '../constants/options';
+import logError from '../utils/logError';
 
 const { runtime, storage, tabs } = browser;
 
@@ -182,6 +183,4 @@ storage.local
   .then(setInitStorage)
   .then(() => tabs.query({ status: 'complete' }))
   .then(allTab => allTab.forEach(setInitTabData))
-  .catch(err => {
-    console.log(err);
-  });
+  .catch(logError);
