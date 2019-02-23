@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "author": "sarics",
-  "license": "ISC",
+  "license": "MIT",
+  "homepage": "https://github.com/sarics/tab-badge#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sarics/tab-badge.git"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "run:webpack": "cross-env NODE_ENV=development webpack --watch --colors",
