@@ -1,6 +1,19 @@
 const { storage } = browser;
 
 export default {
+  saveOptions: options => (state, actions) =>
+    storage.local.set(options).then(() => {
+      actions.setOptions(options);
+    }),
+
+  setOptions: options => state => ({
+    ...state,
+    options: {
+      ...state.options,
+      ...options,
+    },
+  }),
+
   saveOption: ({ name, value }) => (state, actions) =>
     storage.local.set({ [name]: value }).then(() => {
       actions.setOption({ name, value });

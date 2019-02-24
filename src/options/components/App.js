@@ -4,6 +4,18 @@ import Badge from './Badge';
 import FormField from './FormField';
 import FormControl from './FormControl';
 
+const handleResetClick = (fields, setOptions) => () => {
+  const defaultOptions = fields.reduce(
+    (opts, { key, defaultValue }) => ({
+      ...opts,
+      [key]: defaultValue,
+    }),
+    {},
+  );
+
+  setOptions(defaultOptions);
+};
+
 const App = () => ({ fields, options, exampleValues }, actions) => (
   <div>
     <section class="hero is-primary">
@@ -47,6 +59,15 @@ const App = () => ({ fields, options, exampleValues }, actions) => (
               />
             </FormField>
           ))}
+
+          <FormField>
+            <button
+              class="button is-primary"
+              onclick={handleResetClick(fields, actions.setOptions)}
+            >
+              Reset to defaults
+            </button>
+          </FormField>
         </div>
       </div>
     </section>
