@@ -4,7 +4,6 @@ import {
   MESSAGE_UNSET_END,
 } from '../constants/messageTypes';
 import getBadgeCanvas from '../utils/getBadgeCanvas';
-import logError from '../utils/logError';
 
 const ICON_LINKS_HREF_DATA_KEY = 'scsTabBadgeOrigHref';
 const LINK_ELEM_ID = 'scs-tab-badge-favicon';
@@ -108,9 +107,7 @@ const setBadgeFavIcon = favIconUrl => {
   browser.runtime.sendMessage({ type: MESSAGE_SET_END, favIconUrl });
 };
 
-const unsetBadgeFavIcon = err => {
-  logError(err);
-
+const unsetBadgeFavIcon = () => {
   const linkElem = getLinkElem();
   const hadLinkElem = !!linkElem.parentElement;
 
