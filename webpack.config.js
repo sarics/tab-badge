@@ -2,6 +2,8 @@ const path = require('path');
 const cssnano = require('cssnano');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+const { version, description } = require('./package.json');
+
 const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
@@ -65,6 +67,19 @@ module.exports = {
     new CopyWebpackPlugin([
       {
         from: 'manifest.json',
+        transform: content => {
+          const manifest = JSON.parse(content);
+
+          return JSON.stringify(
+            {
+              ...manifest,
+              version,
+              description,
+            },
+            null,
+            2,
+          );
+        },
       },
       {
         from: 'icons/*',

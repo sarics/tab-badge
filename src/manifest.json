@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Tab Badge",
   "description": "",
-  "version": "1.0.0",
+  "version": "",
 
   "browser_specific_settings": {
     "gecko": {
@@ -26,6 +26,7 @@
 
   "options_ui": {
     "page": "options/options.html",
+    "browser_style": false,
     "open_in_tab": true
   }
 }
