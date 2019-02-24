@@ -4,7 +4,7 @@ import Badge from './Badge';
 import FormField from './FormField';
 import FormControl from './FormControl';
 
-const handleResetClick = (fields, setOptions) => () => {
+const handleResetClick = (fields, saveOptions) => () => {
   const defaultOptions = fields.reduce(
     (opts, { key, defaultValue }) => ({
       ...opts,
@@ -13,7 +13,7 @@ const handleResetClick = (fields, setOptions) => () => {
     {},
   );
 
-  setOptions(defaultOptions);
+  saveOptions(defaultOptions);
 };
 
 const App = () => ({ fields, options, exampleValues }, actions) => (
@@ -63,7 +63,7 @@ const App = () => ({ fields, options, exampleValues }, actions) => (
           <FormField>
             <button
               class="button is-primary"
-              onclick={handleResetClick(fields, actions.setOptions)}
+              onclick={handleResetClick(fields, actions.saveOptions)}
             >
               Reset to defaults
             </button>
