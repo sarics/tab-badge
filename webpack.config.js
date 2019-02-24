@@ -66,7 +66,7 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin([
       {
-        from: 'manifest.json',
+        from: '@(manifest).json',
         transform: content => {
           const manifest = JSON.parse(content);
 
@@ -85,7 +85,7 @@ module.exports = {
         from: 'icons/*',
       },
       {
-        from: 'options/*.html',
+        from: 'options/@(options).html',
       },
     ]),
   ],
