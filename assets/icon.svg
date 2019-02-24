@@ -1,0 +1,6 @@
+<svg viewBox="0 0 256 256" width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <ellipse ry="128" rx="128" id="circle" cy="128" cx="128" fill="#559393"/>
+    <rect rx="80" id="badge" height="160" width="220" y="96" x="36" fill="#ff0000"/>
+  </g>
+</svg>
