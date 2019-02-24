@@ -1,3 +1,8 @@
+import {
+  MESSAGE_START,
+  MESSAGE_SET_END,
+  MESSAGE_UNSET_END,
+} from '../constants/messageTypes';
 import getBadgeCanvas from '../utils/getBadgeCanvas';
 import logError from '../utils/logError';
 
@@ -100,7 +105,7 @@ const setBadgeFavIcon = favIconUrl => {
   clearIconLinkElems();
   if (!linkElem.parentElement) document.head.appendChild(linkElem);
 
-  browser.runtime.sendMessage({ type: 'SET_END', favIconUrl });
+  browser.runtime.sendMessage({ type: MESSAGE_SET_END, favIconUrl });
 };
 
 const unsetBadgeFavIcon = err => {
@@ -112,11 +117,11 @@ const unsetBadgeFavIcon = err => {
   if (hadLinkElem) document.head.removeChild(linkElem);
   resetIconLinkElems();
 
-  browser.runtime.sendMessage({ type: 'UNSET_END', hadLinkElem });
+  browser.runtime.sendMessage({ type: MESSAGE_UNSET_END, hadLinkElem });
 };
 
 browser.runtime
-  .sendMessage({ type: 'START' })
+  .sendMessage({ type: MESSAGE_START })
   .then(getBadgeFavIconUrl)
   .then(setBadgeFavIcon)
   .catch(unsetBadgeFavIcon);

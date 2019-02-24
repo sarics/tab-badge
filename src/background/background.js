@@ -1,4 +1,9 @@
 import OPTIONS from '../constants/options';
+import {
+  MESSAGE_START,
+  MESSAGE_SET_END,
+  MESSAGE_UNSET_END,
+} from '../constants/messageTypes';
 import logError from '../utils/logError';
 
 const { runtime, storage, tabs } = browser;
@@ -85,11 +90,11 @@ runtime.onMessage.addListener((message, { tab }) => {
   const tabId = tab.id;
 
   switch (message.type) {
-    case 'START':
+    case MESSAGE_START:
       return handleStartMessage(tabId);
-    case 'SET_END':
+    case MESSAGE_SET_END:
       return handleSetEndMessage(tabId, message);
-    case 'UNSET_END':
+    case MESSAGE_UNSET_END:
       return handleUnsetEndMessage(tabId, message, tab);
     default:
       return false;
