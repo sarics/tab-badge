@@ -11,10 +11,6 @@ export default [
     type: 'select',
     options: [
       {
-        value: STYLE_BORDERED_TEXT,
-        label: 'Bordered',
-      },
-      {
         value: STYLE_ROUND_BG_TEXT,
         label: 'Rounded background',
       },
@@ -22,8 +18,12 @@ export default [
         value: STYLE_RECT_BG_TEXT,
         label: 'Rectangular background',
       },
+      {
+        value: STYLE_BORDERED_TEXT,
+        label: 'Bordered text',
+      },
     ],
-    defaultValue: STYLE_BORDERED_TEXT,
+    defaultValue: STYLE_ROUND_BG_TEXT,
   },
   {
     key: 'fontSize',
