@@ -26,9 +26,9 @@
     "hyperapp": "1.2.9"
   },
   "devDependencies": {
-    "@babel/core": "7.3.3",
+    "@babel/core": "7.3.4",
     "@babel/plugin-transform-react-jsx": "7.3.0",
-    "@babel/preset-env": "7.3.1",
+    "@babel/preset-env": "7.3.4",
     "babel-loader": "8.0.5",
     "copy-webpack-plugin": "5.0.0",
     "cross-env": "5.2.0",
@@ -36,7 +36,7 @@
     "cssnano": "4.1.10",
     "eslint": "5.14.1",
     "eslint-config-airbnb-base": "13.1.0",
-    "eslint-config-prettier": "4.0.0",
+    "eslint-config-prettier": "4.1.0",
     "eslint-plugin-import": "2.16.0",
     "eslint-plugin-react": "7.12.4",
     "node-sass": "4.11.0",
@@ -47,7 +47,7 @@
     "sass-loader": "7.1.0",
     "style-loader": "0.23.1",
     "web-ext": "3.0.0",
-    "webpack": "4.29.5",
+    "webpack": "4.29.6",
     "webpack-cli": "3.2.3"
   }
 }
