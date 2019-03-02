@@ -1,6 +1,6 @@
 {
   "name": "tab-badge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shows a small badge with the unread count (the number between parentheses in the page's title) of the tabs over their favicon.",
   "author": "sarics",
   "license": "MIT",
