@@ -4,6 +4,8 @@ A webextension that shows a small badge with the unread count (the number betwee
 
 Currently only Firefox is supported.
 
+[https://addons.mozilla.org/addon/tabbadge/](https://addons.mozilla.org/addon/tabbadge/)
+
 ## Development
 
 Requirements:
