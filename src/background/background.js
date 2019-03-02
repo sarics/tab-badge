@@ -15,6 +15,9 @@ const tabsData = {};
 const sentTabsData = {};
 const tabsBadgeFavIcons = {};
 
+const executeScript = tabId =>
+  tabs.executeScript(tabId, { file: '/content/content.js' });
+
 const parseTitleNum = numStr => {
   const num = parseInt(numStr, 10);
   if (Number.isNaN(num) || num === 0) return undefined;
@@ -73,7 +76,7 @@ const handleUnsetEndMessage = (
       badgeNum: getBadgeNum(title),
     };
 
-    tabs.executeScript(tabId, { file: '/content/content.js' });
+    executeScript(tabId);
   }
 
   return false;
@@ -117,7 +120,7 @@ storage.onChanged.addListener(changes => {
     allTab.forEach(tab => {
       sentTabsData[tab.id] = undefined;
 
-      tabs.executeScript(tab.id, { file: '/content/content.js' });
+      executeScript(tab.id);
     });
   });
 });
@@ -148,7 +151,7 @@ tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
       tabData.favIconUrl !== newTabData.favIconUrl ||
       tabData.badgeNum !== newTabData.badgeNum)
   ) {
-    tabs.executeScript(tabId, { file: '/content/content.js' });
+    executeScript(tabId);
   }
 
   tabsData[tabId] = newTabData;
@@ -181,7 +184,7 @@ const setInitTabData = ({ id, title, favIconUrl }) => {
       favIconUrl: 'clear',
     };
 
-    tabs.executeScript(id, { file: '/content/content.js' });
+    executeScript(id);
   } else {
     tabsData[id] = {
       favIconUrl,
