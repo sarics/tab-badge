@@ -147,8 +147,7 @@ tabs.onUpdated.addListener((tabId, changeInfo, tabInfo) => {
   if (
     tabInfo.status === 'complete' &&
     (tabData.badgeNum || newTabData.badgeNum) &&
-    (changeInfo.status === 'complete' ||
-      tabData.favIconUrl !== newTabData.favIconUrl ||
+    (tabData.favIconUrl !== newTabData.favIconUrl ||
       tabData.badgeNum !== newTabData.badgeNum)
   ) {
     executeScript(tabId);
