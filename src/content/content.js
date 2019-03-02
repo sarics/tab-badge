@@ -5,7 +5,6 @@ import {
 } from '../constants/messageTypes';
 import getBadgeCanvas from '../utils/getBadgeCanvas';
 
-const ICON_LINKS_HREF_DATA_KEY = 'scsTabBadgeOrigHref';
 const LINK_ELEM_ID = 'scs-tab-badge-favicon';
 const CANVAS_SIZE = 16;
 
@@ -30,28 +29,12 @@ const getIconLinkElems = () => {
       Array.from(linkElem.relList).includes('icon'),
   );
 };
-const clearIconLinkElems = () => {
-  getIconLinkElems().forEach(linkElem => {
-    if (linkElem.dataset[ICON_LINKS_HREF_DATA_KEY]) {
-      return;
-    }
-
-    const { href } = linkElem;
-    /* eslint-disable no-param-reassign */
-    linkElem.dataset[ICON_LINKS_HREF_DATA_KEY] = href;
-    linkElem.href = '';
-    /* eslint-enable no-param-reassign */
-  });
-};
 const resetIconLinkElems = () => {
   getIconLinkElems().forEach(linkElem => {
-    if (!linkElem.dataset[ICON_LINKS_HREF_DATA_KEY]) {
-      return;
-    }
+    const { href } = linkElem;
 
-    const href = linkElem.dataset[ICON_LINKS_HREF_DATA_KEY];
     /* eslint-disable no-param-reassign */
-    delete linkElem.dataset[ICON_LINKS_HREF_DATA_KEY];
+    linkElem.href = '';
     linkElem.href = href;
     /* eslint-enable no-param-reassign */
   });
@@ -101,7 +84,6 @@ const setBadgeFavIcon = favIconUrl => {
   const linkElem = getLinkElem();
   linkElem.href = favIconUrl;
 
-  clearIconLinkElems();
   if (!linkElem.parentElement) document.head.appendChild(linkElem);
 
   browser.runtime.sendMessage({ type: MESSAGE_SET_END, favIconUrl });
