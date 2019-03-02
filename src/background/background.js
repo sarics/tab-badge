@@ -10,6 +10,7 @@ const { runtime, storage, tabs } = browser;
 
 const MAX_CHARS = 2;
 
+let inited;
 const tabsData = {};
 const sentTabsData = {};
 const tabsBadgeFavIcons = {};
@@ -85,6 +86,11 @@ const clearTabData = tabId => {
 };
 
 // listeners
+
+runtime.onInstalled.addListener(({ reason, temporary }) => {
+  if (!temporary && reason === 'install')
+    inited.then(() => runtime.openOptionsPage());
+});
 
 runtime.onMessage.addListener((message, { tab }) => {
   const tabId = tab.id;
@@ -183,7 +189,7 @@ const setInitTabData = ({ id, title, favIconUrl }) => {
   }
 };
 
-storage.local
+inited = storage.local
   .get()
   .then(setInitStorage)
   .then(() => tabs.query({ status: 'complete' }))
