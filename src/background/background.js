@@ -12,7 +12,6 @@ const MAX_CHARS = 2;
 
 let inited;
 const tabsData = {};
-const sentTabsData = {};
 const tabsBadgeFavIcons = {};
 
 const executeScript = tabId =>
@@ -43,17 +42,9 @@ const getTabsWithBadgeNum = () =>
 
 const handleStartMessage = tabId => {
   const tabData = tabsData[tabId];
-  const sentTabData = sentTabsData[tabId] || {};
 
-  if (
-    !tabData ||
-    (tabData.badgeNum === sentTabData.badgeNum &&
-      tabData.favIconUrl === sentTabData.favIconUrl)
-  ) {
-    return Promise.reject();
-  }
+  if (!tabData) return Promise.reject();
 
-  sentTabsData[tabId] = { ...tabData };
   return storage.local.get().then(options => ({ ...tabData, options }));
 };
 
@@ -84,7 +75,6 @@ const handleUnsetEndMessage = (
 
 const clearTabData = tabId => {
   tabsData[tabId] = undefined;
-  sentTabsData[tabId] = undefined;
   tabsBadgeFavIcons[tabId] = undefined;
 };
 
@@ -118,8 +108,6 @@ storage.onChanged.addListener(changes => {
 
   getTabsWithBadgeNum().then(allTab => {
     allTab.forEach(tab => {
-      sentTabsData[tab.id] = undefined;
-
       executeScript(tab.id);
     });
   });
