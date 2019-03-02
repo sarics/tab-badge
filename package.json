@@ -19,7 +19,8 @@
     "start:web-ext": "web-ext run -s dist",
     "start": "npm-run-all -l clean build:webpack:dev -p -r start:*",
     "lint:web-ext": "web-ext lint -s dist",
-    "lint": "npm-run-all clean build:webpack:prod lint:web-ext"
+    "lint": "npm-run-all clean build:webpack:prod lint:web-ext",
+    "release": "standard-version"
   },
   "dependencies": {
     "bulma": "0.7.4",
@@ -45,6 +46,7 @@
     "prettier": "1.16.4",
     "rimraf": "2.6.3",
     "sass-loader": "7.1.0",
+    "standard-version": "5.0.1",
     "style-loader": "0.23.1",
     "web-ext": "3.0.0",
     "webpack": "4.29.6",
